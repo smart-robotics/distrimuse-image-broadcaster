@@ -80,6 +80,8 @@ class CameraBroadcasterNode(Node):
                 continue
 
             msg = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")
+            # Note: this is the publish time, not the actual capture time. RTSP
+            # streams (Dahua cameras) don't expose per-frame capture timestamps.
             msg.header.stamp = self.get_clock().now().to_msg()
             msg.header.frame_id = capture.name
 
