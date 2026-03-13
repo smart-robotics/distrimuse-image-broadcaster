@@ -4,6 +4,11 @@ Stream IP cameras as ROS2 topics with optional rosbag recording and replay.
 
 ## Setup
 
+This project uses [pixi](https://pixi.sh) for package management. It handles installing Python, ROS2, and all dependencies in an isolated environment — no system-level ROS2 installation required.
+
+1. Install pixi: https://pixi.sh/latest/#installation
+2. Install project dependencies:
+
 ```bash
 pixi install
 ```

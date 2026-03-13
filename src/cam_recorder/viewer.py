@@ -11,7 +11,6 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import Image
 
-from cam_recorder.config import DEFAULT_CAMERAS, TOPIC_TEMPLATE
 from cam_recorder.fps_counter import FpsCounter
 
 
@@ -130,6 +129,8 @@ def main():
 
     topics = args.topic
     if not topics:
+        from cam_recorder.config import DEFAULT_CAMERAS, TOPIC_TEMPLATE
+
         topics = [TOPIC_TEMPLATE.format(name=cam["name"]) for cam in DEFAULT_CAMERAS]
 
     rclpy.init(args=ros_args)
