@@ -11,5 +11,8 @@ config/config.yaml
 # rosbag recordings
 bags/
 
+# pytest
+.pytest_cache/
+
 # claude code
 .claude/
