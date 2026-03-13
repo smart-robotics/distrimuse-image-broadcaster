@@ -1,0 +1,15 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+# python bytecode
+__pycache__/
+
+# config with credentials
+config/config.yaml
+
+# rosbag recordings
+bags/
+
+# claude code
+.claude/
