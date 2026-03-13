@@ -8,6 +8,16 @@ Stream IP cameras as ROS2 topics with optional rosbag recording and replay.
 pixi install
 ```
 
+## Configuration
+
+Copy the example config and fill in your camera credentials:
+
+```bash
+cp config/config.yaml.example config/config.yaml
+```
+
+Edit `config/config.yaml` with your camera names, RTSP URLs, desired FPS, and topic template. See the comments in the file for details.
+
 ## Tasks
 
 | Task | Description | Usage |
