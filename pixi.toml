@@ -8,6 +8,7 @@ version = "0.1.0"
 [activation.env]
 PYTHONPATH = "${PIXI_PROJECT_ROOT}/src:${PYTHONPATH}"
 RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
+CYCLONEDDS_URI = "file://${PIXI_PROJECT_ROOT}/config/cyclonedds.xml"
 
 [tasks]
 broadcast = "python -m cam_recorder.broadcaster"

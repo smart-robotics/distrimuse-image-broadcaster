@@ -1,0 +1,14 @@
+<CycloneDDS>
+  <Domain>
+    <General>
+      <AllowMulticast>false</AllowMulticast>
+    </General>
+    <Discovery>
+      <Peers>
+        <!-- Add the IP addresses of all machines in the network.
+             Each machine needs to list the other machines' IPs here. -->
+        <Peer address="192.168.6.11"/>
+      </Peers>
+    </Discovery>
+  </Domain>
+</CycloneDDS>
