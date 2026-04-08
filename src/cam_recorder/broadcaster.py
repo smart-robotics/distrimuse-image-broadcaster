@@ -19,7 +19,7 @@ from cam_recorder.fps_counter import FpsCounter
 class CameraBroadcasterNode(Node):
     def __init__(self, cameras, fps, collect_bag, bag_path):
         super().__init__("camera_broadcaster")
-        self._encode_params = [cv2.IMWRITE_JPEG_QUALITY, 80]
+        self._encode_params = [cv2.IMWRITE_JPEG_QUALITY, 90]
         self._start_time = time.monotonic()
         self.captures = []
         self._pubs = {}
