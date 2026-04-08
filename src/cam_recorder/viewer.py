@@ -4,12 +4,12 @@ import time
 from datetime import datetime
 
 import cv2
+import numpy as np
 import rclpy
-from cv_bridge import CvBridge
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 
 from cam_recorder.fps_counter import FpsCounter
 
@@ -18,7 +18,6 @@ class CameraViewerNode(Node):
     def __init__(self, topics, headless=False):
         super().__init__("camera_viewer")
         self._headless = headless
-        self.bridge = CvBridge()
         self._start_time = time.monotonic()
         self._fps_counters: dict[str, FpsCounter] = {}
         self._latest_frames: dict[str, object] = {}
@@ -32,7 +31,7 @@ class CameraViewerNode(Node):
         for topic in topics:
             self._fps_counters[topic] = FpsCounter()
             self.create_subscription(
-                Image,
+                CompressedImage,
                 topic,
                 lambda msg, t=topic: self._image_callback(t, msg),
                 sensor_qos,
@@ -53,7 +52,11 @@ class CameraViewerNode(Node):
         for topic, msg in list(self._latest_frames.items()):
             if msg is None:
                 continue
-            frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
+            frame = cv2.imdecode(
+                np.frombuffer(msg.data, dtype=np.uint8), cv2.IMREAD_COLOR
+            )
+            if frame is None:
+                continue
 
             stamp = msg.header.stamp
             dt = datetime.fromtimestamp(stamp.sec + stamp.nanosec * 1e-9)

@@ -7,10 +7,9 @@ import cv2
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
 import rosbag2_py
-from cv_bridge import CvBridge
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 
 from cam_recorder.viewer import CameraViewerNode
 
@@ -27,7 +26,7 @@ def get_bag_image_topics(bag_path):
     topics = [
         t.name
         for t in reader.get_all_topics_and_types()
-        if t.type == "sensor_msgs/msg/Image"
+        if t.type == "sensor_msgs/msg/CompressedImage"
     ]
     del reader
     return topics

@@ -3,12 +3,12 @@ import sys
 import time
 from datetime import datetime
 
+import cv2
 import rclpy
 import rclpy.serialization
-from cv_bridge import CvBridge
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 import rosbag2_py
 
 from cam_recorder.camera_capture import CameraCapture
@@ -19,7 +19,7 @@ from cam_recorder.fps_counter import FpsCounter
 class CameraBroadcasterNode(Node):
     def __init__(self, cameras, fps, collect_bag, bag_path):
         super().__init__("camera_broadcaster")
-        self.bridge = CvBridge()
+        self._encode_params = [cv2.IMWRITE_JPEG_QUALITY, 80]
         self._start_time = time.monotonic()
         self.captures = []
         self._pubs = {}
@@ -42,7 +42,7 @@ class CameraBroadcasterNode(Node):
             capture.start()
             self.captures.append(capture)
 
-            pub = self.create_publisher(Image, topic, sensor_qos)
+            pub = self.create_publisher(CompressedImage, topic, sensor_qos)
             self._pubs[name] = pub
             self._publish_fps[name] = FpsCounter()
             self.get_logger().info(f"Publishing {name} on {topic}")
@@ -67,7 +67,7 @@ class CameraBroadcasterNode(Node):
             topic_info = rosbag2_py.TopicMetadata(
                 id=0,
                 name=topic,
-                type="sensor_msgs/msg/Image",
+                type="sensor_msgs/msg/CompressedImage",
                 serialization_format="cdr",
             )
             self.bag_writer.create_topic(topic_info)
@@ -79,11 +79,14 @@ class CameraBroadcasterNode(Node):
             if frame is None:
                 continue
 
-            msg = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")
+            _, encoded = cv2.imencode(".jpg", frame, self._encode_params)
+            msg = CompressedImage()
             # Note: this is the publish time, not the actual capture time. RTSP
             # streams (Dahua cameras) don't expose per-frame capture timestamps.
             msg.header.stamp = self.get_clock().now().to_msg()
             msg.header.frame_id = capture.name
+            msg.format = "jpeg"
+            msg.data = encoded.tobytes()
 
             self._pubs[capture.name].publish(msg)
             self._publish_fps[capture.name].tick()
