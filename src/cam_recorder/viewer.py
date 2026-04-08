@@ -15,8 +15,9 @@ from cam_recorder.fps_counter import FpsCounter
 
 
 class CameraViewerNode(Node):
-    def __init__(self, topics):
+    def __init__(self, topics, headless=False):
         super().__init__("camera_viewer")
+        self._headless = headless
         self.bridge = CvBridge()
         self._start_time = time.monotonic()
         self._fps_counters: dict[str, FpsCounter] = {}
@@ -25,7 +26,7 @@ class CameraViewerNode(Node):
         sensor_qos = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
             history=HistoryPolicy.KEEP_LAST,
-            depth=5,
+            depth=1,
         )
 
         for topic in topics:
@@ -45,6 +46,10 @@ class CameraViewerNode(Node):
         self._latest_frames[topic] = msg
 
     def display_once(self):
+        if self._headless:
+            time.sleep(0.03)
+            return
+
         for topic, msg in list(self._latest_frames.items()):
             if msg is None:
                 continue
@@ -96,15 +101,17 @@ class CameraViewerNode(Node):
                 cv2.LINE_AA,
             )
 
-            window_name = topic.split("/")[-2] if "/" in topic else topic
+            parts = topic.strip("/").split("/")
+            window_name = parts[1] if len(parts) > 1 else topic
             cv2.imshow(window_name, frame)
 
-        cv2.waitKey(1)
+        cv2.waitKey(5)
 
     def _log_fps(self):
         parts = []
         for topic, counter in self._fps_counters.items():
-            name = topic.split("/")[-2] if "/" in topic else topic
+            segments = topic.strip("/").split("/")
+            name = segments[1] if len(segments) > 1 else topic
             parts.append(f"{name}: {counter.fps():.1f}")
         elapsed = int(time.monotonic() - self._start_time)
         h, m, s = elapsed // 3600, elapsed % 3600 // 60, elapsed % 60
@@ -113,7 +120,8 @@ class CameraViewerNode(Node):
         print(f"\r{line:<90}", end="", flush=True)
 
     def shutdown(self):
-        cv2.destroyAllWindows()
+        if not self._headless:
+            cv2.destroyAllWindows()
 
 
 def main():
@@ -123,6 +131,11 @@ def main():
         action="append",
         default=None,
         help="Topic to subscribe to (repeatable; defaults to all default cameras)",
+    )
+    parser.add_argument(
+        "--headless",
+        action="store_true",
+        help="Run without display, only print received FPS",
     )
 
     args, ros_args = parser.parse_known_args()
@@ -134,7 +147,7 @@ def main():
         topics = [TOPIC_TEMPLATE.format(name=cam["name"]) for cam in DEFAULT_CAMERAS]
 
     rclpy.init(args=ros_args)
-    node = CameraViewerNode(topics)
+    node = CameraViewerNode(topics, headless=args.headless)
     executor = MultiThreadedExecutor()
     executor.add_node(node)
 

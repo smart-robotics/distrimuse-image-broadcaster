@@ -28,9 +28,9 @@ class CameraBroadcasterNode(Node):
         self.topic_names = {}
 
         sensor_qos = QoSProfile(
-            reliability=ReliabilityPolicy.RELIABLE,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
             history=HistoryPolicy.KEEP_LAST,
-            depth=5,
+            depth=1,
         )
 
         for cam in cameras:
